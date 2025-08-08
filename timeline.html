@@ -16,16 +16,6 @@
             --accent-light: #2d5a1a;
         }
         
-        [data-theme="dark"] {
-            --bg-primary: #312927;
-            --bg-secondary: #3d332f;
-            --text-primary: #f5f3f0;
-            --text-secondary: #c4b5a0;
-            --border-color: #5a4d47;
-            --accent-color: #4a7c59;
-            --accent-light: #6b9b7a;
-        }
-        
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
@@ -93,20 +83,6 @@
             border-bottom: 1px solid var(--border-color);
         }
         
-        /* 다크모드 토글 */
-        .theme-toggle {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .theme-toggle:hover {
-            background: var(--accent-color);
-            color: white;
-        }
         
         /* 애니메이션 */
         @keyframes fadeInUp {
@@ -192,9 +168,7 @@
                         <h1 class="text-3xl font-bold">과학기술 발전사 타임라인</h1>
                         <p id="stats" class="text-sm opacity-75 mt-1"></p>
                     </div>
-                    <button id="themeToggle" class="theme-toggle">
-                        <span id="themeIcon">🌙</span>
-                    </button>
+
                 </div>
             </div>
 
@@ -270,26 +244,10 @@
             resultCount: document.getElementById('resultCount'),
             timeline: document.getElementById('timeline'),
             generatedDate: document.getElementById('generatedDate'),
-            themeToggle: document.getElementById('themeToggle'),
-            themeIcon: document.getElementById('themeIcon'),
+
             yearNav: document.getElementById('yearNav')
         };
         
-        // 다크모드 관리
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            elements.themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-        }
-        
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            elements.themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-        }
-
         // 분야명 한국어 번역 매핑
         const fieldTranslations = {
             'Agriculture': '농업(Agriculture)',
@@ -1043,7 +1001,6 @@
 
         // 초기화
         function init() {
-            initTheme();
             setupEventListeners();
             loadData();
         }
