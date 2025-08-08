@@ -13,7 +13,7 @@
 
 ## 🚀 라이브 데모
 
-[GitHub Pages에서 확인하기](https://yourusername.github.io/historicaltechtree/)
+[GitHub Pages에서 확인하기](https://haebom.github.io/historicaltechtree/)
 
 ## 📁 프로젝트 구조
 
@@ -45,7 +45,7 @@ npx serve .
 
 ### 3. 브라우저에서 확인
 ```
-http://localhost:8000/timeline.html
+http://haebom.github.io/timeline
 ```
 
 ## 📊 데이터 구조
@@ -84,7 +84,7 @@ http://localhost:8000/timeline.html
 
 ### 1. GitHub 저장소 생성
 - GitHub에서 새 저장소 생성
-- 저장소명: `historicaltechtree` (또는 원하는 이름)
+- 저장소명: `tech-time` (또는 원하는 이름)
 
 ### 2. 코드 업로드
 ```bash
@@ -92,7 +92,7 @@ git init
 git add .
 git commit -m "Initial commit: Historical Tech Timeline"
 git branch -M main
-git remote add origin https://github.com/yourusername/historicaltechtree.git
+git remote add origin https://github.com/yourusername/tech-timeline.git
 git push -u origin main
 ```
 
