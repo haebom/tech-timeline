@@ -5,7 +5,7 @@
 ## 🌟 주요 기능
 
 - **인터랙티브 타임라인**: 기원전 330만년부터 2025년까지의 과학기술 발전사
-- **다크/라이트 모드**: 사용자 선호에 따른 테마 전환
+- **친절한 안내 문구**: 타임라인 사용 방법을 간단히 안내
 - **연도별 네비게이션**: 특정 연도로 빠른 이동
 - **분야별 필터링**: 컴퓨터, 의학, 물리학 등 분야별 검색
 - **반응형 디자인**: 모바일, 태블릿, 데스크톱 지원
@@ -13,12 +13,12 @@
 
 ## 🚀 라이브 데모
 
-[GitHub Pages에서 확인하기](https://haebom.github.io/historicaltechtree/)
+[GitHub Pages에서 확인하기](https://haebom.github.io/tech-timeline/timeline.html)
 
 ## 📁 프로젝트 구조
 
 ```
-historicaltechtree/
+ tech-timeline/
 ├── timeline.html          # 메인 HTML 파일
 ├── timeline-data.json     # 타임라인 데이터
 ├── package.json          # 프로젝트 설정
@@ -30,8 +30,8 @@ historicaltechtree/
 
 ### 1. 저장소 클론
 ```bash
-git clone https://github.com/yourusername/historicaltechtree.git
-cd historicaltechtree
+git clone https://github.com/yourusername/tech-timeline.git
+cd tech-timeline
 ```
 
 ### 2. 로컬 서버 실행
@@ -45,7 +45,7 @@ npx serve .
 
 ### 3. 브라우저에서 확인
 ```
-http://haebom.github.io/timeline
+https://haebom.github.io/tech-timeline/timeline.html
 ```
 
 ## 📊 데이터 구조
@@ -84,7 +84,7 @@ http://haebom.github.io/timeline
 
 ### 1. GitHub 저장소 생성
 - GitHub에서 새 저장소 생성
-- 저장소명: `tech-time` (또는 원하는 이름)
+- 저장소명: `tech-timeline` (또는 원하는 이름)
 
 ### 2. 코드 업로드
 ```bash
@@ -104,7 +104,7 @@ git push -u origin main
 5. Save 클릭
 
 ### 4. 배포 확인
-- 몇 분 후 `https://yourusername.github.io/historicaltechtree/timeline.html`에서 확인
+- 몇 분 후 `https://yourusername.github.io/tech-timeline/timeline.html`에서 확인
 
 ## 🔧 기술 스택
 
