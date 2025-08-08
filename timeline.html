@@ -16,6 +16,16 @@
             --accent-light: #2d5a1a;
         }
         
+        [data-theme="dark"] {
+            --bg-primary: #312927;
+            --bg-secondary: #3d332f;
+            --text-primary: #f5f3f0;
+            --text-secondary: #c4b5a0;
+            --border-color: #5a4d47;
+            --accent-color: #4a7c59;
+            --accent-light: #6b9b7a;
+        }
+        
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
@@ -83,6 +93,21 @@
             border-bottom: 1px solid var(--border-color);
         }
         
+        /* 다크모드 토글 */
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .theme-toggle:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+        
         /* 애니메이션 */
         @keyframes fadeInUp {
             from {
@@ -140,7 +165,7 @@
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-50">
     <div id="app" class="mx-auto max-w-5xl p-6 space-y-6">
         <!-- 로딩 상태 -->
         <div id="loading" class="flex items-center justify-center min-h-screen">
@@ -162,12 +187,14 @@
         <div id="content" class="hidden">
             <!-- 스티키 헤더 -->
             <div class="sticky-header py-4 mb-8">
-                <div class="flex items-center justify-center">
-                    <div class="text-center">
+                <div class="flex items-center justify-between">
+                    <div class="text-center flex-1">
                         <h1 class="text-3xl font-bold">과학기술 발전사 타임라인</h1>
-                        <p class="mt-2 text-sm text-gray-600">인류 역사상 중요한 과학기술 발전을 연도순으로 정리했습니다. 검색과 필터를 활용해 살펴보세요.</p>
                         <p id="stats" class="text-sm opacity-75 mt-1"></p>
                     </div>
+                    <button id="themeToggle" class="theme-toggle">
+                        <span id="themeIcon">🌙</span>
+                    </button>
                 </div>
             </div>
 
@@ -243,8 +270,25 @@
             resultCount: document.getElementById('resultCount'),
             timeline: document.getElementById('timeline'),
             generatedDate: document.getElementById('generatedDate'),
+            themeToggle: document.getElementById('themeToggle'),
+            themeIcon: document.getElementById('themeIcon'),
             yearNav: document.getElementById('yearNav')
         };
+        
+        // 다크모드 관리
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            elements.themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            elements.themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
 
         // 분야명 한국어 번역 매핑
         const fieldTranslations = {
@@ -935,9 +979,24 @@
             }
         }
 
+        // Debounce 함수 (검색 UX 개선)
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
         // 이벤트 리스너 등록
         function setupEventListeners() {
-            elements.searchInput.addEventListener('input', filterItems);
+            // 검색 입력에만 debounce 적용 (300ms 지연)
+            elements.searchInput.addEventListener('input', debounce(filterItems, 300));
+            // 연도 입력과 필드 선택은 즉시 적용
             elements.minYearInput.addEventListener('input', filterItems);
             elements.maxYearInput.addEventListener('input', filterItems);
             elements.fieldSelect.addEventListener('change', filterItems);
@@ -984,6 +1043,7 @@
 
         // 초기화
         function init() {
+            initTheme();
             setupEventListeners();
             loadData();
         }

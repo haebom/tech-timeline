@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "totalItems": 1958,
+    "totalItems": 1965,
     "dateRange": {
       "earliest": -3300000,
       "latest": 2025
@@ -259,6 +259,150 @@
       ],
       "organizations": [
         "OpenAI"
+      ],
+      "location": "San Francisco Bay Area, USA"
+    },
+    {
+      "id": "recClaude35Sonnet",
+      "date": "2024-06-20",
+      "title": "Claude 3.5 Sonnet",
+      "summary": "Anthropic의 최고 성능 AI 모델 • Computing • 개발: Anthropic • 위치: San Francisco Bay Area, USA",
+      "href": "https://www.anthropic.com/claude",
+      "icon": "branch",
+      "year": 2024,
+      "yearLabel": "2024",
+      "type": "Tool",
+      "fields": [
+        "Computing"
+      ],
+      "organizations": [
+        "Anthropic"
+      ],
+      "location": "San Francisco Bay Area, USA"
+    },
+    {
+      "id": "recClaude3Opus",
+      "date": "2024-03-04",
+      "title": "Claude 3 Opus",
+      "summary": "Anthropic의 가장 강력한 AI 모델 • Computing • 개발: Anthropic • 위치: San Francisco Bay Area, USA",
+      "href": "https://www.anthropic.com/claude",
+      "icon": "branch",
+      "year": 2024,
+      "yearLabel": "2024",
+      "type": "Tool",
+      "fields": [
+        "Computing"
+      ],
+      "organizations": [
+        "Anthropic"
+      ],
+      "location": "San Francisco Bay Area, USA"
+    },
+    {
+      "id": "recClaude2",
+      "date": "2023-07-11",
+      "title": "Claude 2",
+      "summary": "향상된 대화형 AI 모델 • Computing • 개발: Anthropic • 위치: San Francisco Bay Area, USA",
+      "href": "https://www.anthropic.com/claude",
+      "icon": "branch",
+      "year": 2023,
+      "yearLabel": "2023",
+      "type": "Tool",
+      "fields": [
+        "Computing"
+      ],
+      "organizations": [
+        "Anthropic"
+      ],
+      "location": "San Francisco Bay Area, USA"
+    },
+    {
+      "id": "recGemini15Pro",
+      "date": "2024-02-15",
+      "title": "Gemini 1.5 Pro",
+      "summary": "Google의 차세대 멀티모달 AI 모델 • Computing • 개발: Google • 위치: Mountain View, USA",
+      "href": "https://deepmind.google/technologies/gemini/",
+      "icon": "branch",
+      "year": 2024,
+      "yearLabel": "2024",
+      "type": "Tool",
+      "fields": [
+        "Computing"
+      ],
+      "organizations": [
+        "Google"
+      ],
+      "location": "Mountain View, USA"
+    },
+    {
+      "id": "recGrokAI",
+      "date": "2023-11-04",
+      "title": "Grok AI",
+      "summary": "xAI의 유머와 실시간 정보 특화 AI • Computing • 개발: xAI • 위치: San Francisco Bay Area, USA",
+      "href": "https://grok.x.ai/",
+      "icon": "branch",
+      "year": 2023,
+      "yearLabel": "2023",
+      "type": "Tool",
+      "fields": [
+        "Computing"
+      ],
+      "organizations": [
+        "xAI"
+      ],
+      "location": "San Francisco Bay Area, USA"
+    },
+    {
+      "id": "recGeminiPro",
+      "date": "2023-12-06",
+      "title": "Gemini Pro",
+      "summary": "Google의 멀티모달 대화형 AI • Computing • 개발: Google • 위치: Mountain View, USA",
+      "href": "https://deepmind.google/technologies/gemini/",
+      "icon": "branch",
+      "year": 2023,
+      "yearLabel": "2023",
+      "type": "Tool",
+      "fields": [
+        "Computing"
+      ],
+      "organizations": [
+        "Google"
+      ],
+      "location": "Mountain View, USA"
+    },
+    {
+      "id": "recBard",
+      "date": "2023-03-21",
+      "title": "Google Bard",
+      "summary": "Google의 대화형 AI 서비스 • Computing • 개발: Google • 위치: Mountain View, USA",
+      "href": "https://bard.google.com/",
+      "icon": "branch",
+      "year": 2023,
+      "yearLabel": "2023",
+      "type": "Tool",
+      "fields": [
+        "Computing"
+      ],
+      "organizations": [
+        "Google"
+      ],
+      "location": "Mountain View, USA"
+    },
+    {
+      "id": "recClaude1",
+      "date": "2022-04-01",
+      "title": "Claude 1.0",
+      "summary": "Anthropic의 첫 번째 대화형 AI 모델 • Computing • 개발: Anthropic • 위치: San Francisco Bay Area, USA",
+      "href": "https://www.anthropic.com/claude",
+      "icon": "branch",
+      "year": 2022,
+      "yearLabel": "2022",
+      "type": "Tool",
+      "fields": [
+        "Computing"
+      ],
+      "organizations": [
+        "Anthropic"
       ],
       "location": "San Francisco Bay Area, USA"
     },
