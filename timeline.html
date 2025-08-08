@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>과학기술 발전사 타임라인</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-primary: #f5f3f0;
+            --bg-secondary: #ffffff;
+            --text-primary: #312927;
+            --text-secondary: #795942;
+            --border-color: #d4c8b8;
+            --accent-color: #123300;
+            --accent-light: #2d5a1a;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #312927;
+            --bg-secondary: #3d332f;
+            --text-primary: #f5f3f0;
+            --text-secondary: #c4b5a0;
+            --border-color: #5a4d47;
+            --accent-color: #4a7c59;
+            --accent-light: #6b9b7a;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .timeline-line {
+            background: linear-gradient(to bottom, var(--accent-light), var(--accent-color));
+        }
+        .timeline-dot {
+            box-shadow: 0 0 0 4px var(--bg-secondary), 0 0 0 6px var(--accent-light);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(99, 102, 241, 0.25);
+        }
+        .tech-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .tech-card:hover {
+            border-color: var(--accent-color);
+        }
+        .loading-spinner {
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* 연도별 구분선 */
+        .decade-marker {
+            position: relative;
+            margin: 2rem 0;
+        }
+        .decade-marker::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-color), transparent);
+            opacity: 0.3;
+        }
+        .decade-label {
+            background: var(--bg-primary);
+            color: var(--accent-color);
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            border: 2px solid var(--accent-color);
+            display: inline-block;
+        }
+        
+        /* 스티키 헤더 */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* 다크모드 토글 */
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .theme-toggle:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        /* 애니메이션 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 스무스 스크롤 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* 연도 점프 네비게이션 */
+        .year-nav {
+            position: fixed;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            max-height: 60vh;
+            overflow-y: auto;
+            z-index: 40;
+        }
+        
+        .year-nav-item {
+            display: block;
+            padding: 0.25rem 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .year-nav-item:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="mx-auto max-w-5xl p-6 space-y-6">
+        <!-- 로딩 상태 -->
+        <div id="loading" class="flex items-center justify-center min-h-screen">
+            <div class="text-center">
+                <div class="loading-spinner mx-auto mb-4"></div>
+                <div class="text-lg text-gray-600">데이터 로딩 중...</div>
+            </div>
+        </div>
+
+        <!-- 에러 상태 -->
+        <div id="error" class="hidden flex items-center justify-center min-h-screen">
+            <div class="text-center">
+                <div class="text-red-600 text-lg mb-2">⚠️ 오류 발생</div>
+                <div id="error-message" class="text-gray-600"></div>
+            </div>
+        </div>
+
+        <!-- 메인 컨텐츠 -->
+        <div id="content" class="hidden">
+            <!-- 스티키 헤더 -->
+            <div class="sticky-header py-4 mb-8">
+                <div class="flex items-center justify-between">
+                    <div class="text-center flex-1">
+                        <h1 class="text-3xl font-bold">과학기술 발전사 타임라인</h1>
+                        <p id="stats" class="text-sm opacity-75 mt-1"></p>
+                    </div>
+                    <button id="themeToggle" class="theme-toggle">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 필터 컨트롤 -->
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-4 mb-6">
+                <input
+                    id="searchInput"
+                    type="text"
+                    class="rounded-xl border border-gray-300 p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    placeholder="검색 (제목, 요약, 분야, 기관)"
+                />
+                <input
+                    id="minYearInput"
+                    type="number"
+                    class="rounded-xl border border-gray-300 p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    placeholder="최소 연도 (예: -500, 1800)"
+                />
+                <input
+                    id="maxYearInput"
+                    type="number"
+                    class="rounded-xl border border-gray-300 p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    placeholder="최대 연도 (예: 2025)"
+                />
+                <select
+                    id="fieldSelect"
+                    class="rounded-xl border border-gray-300 p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                >
+                    <option value="">전체 분야</option>
+                </select>
+            </div>
+
+            <!-- 결과 카운트 -->
+            <div id="resultCount" class="text-center text-gray-600 mb-6"></div>
+
+            <!-- 연도 네비게이션 -->
+            <div id="yearNav" class="year-nav hidden"></div>
+            
+            <!-- 타임라인 -->
+            <div class="relative ml-24">
+                <!-- 세로선 -->
+                <div class="absolute left-8 top-0 h-full w-0.5 timeline-line" aria-hidden="true"></div>
+                
+                <ol id="timeline" class="space-y-6"></ol>
+            </div>
+
+            <!-- 푸터 -->
+            <div class="text-center text-sm text-gray-500 pt-8">
+                데이터 출처: 
+                <a href="https://www.historicaltechtree.com/" class="text-indigo-600 hover:underline" target="_blank" rel="noreferrer">
+                    Historical Tech Tree
+                </a> • 
+                <span id="generatedDate"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let timelineData = null;
+        let filteredItems = [];
+
+        // DOM 요소들
+        const elements = {
+            loading: document.getElementById('loading'),
+            error: document.getElementById('error'),
+            errorMessage: document.getElementById('error-message'),
+            content: document.getElementById('content'),
+            stats: document.getElementById('stats'),
+            searchInput: document.getElementById('searchInput'),
+            minYearInput: document.getElementById('minYearInput'),
+            maxYearInput: document.getElementById('maxYearInput'),
+            fieldSelect: document.getElementById('fieldSelect'),
+            resultCount: document.getElementById('resultCount'),
+            timeline: document.getElementById('timeline'),
+            generatedDate: document.getElementById('generatedDate'),
+            themeToggle: document.getElementById('themeToggle'),
+            themeIcon: document.getElementById('themeIcon'),
+            yearNav: document.getElementById('yearNav')
+        };
+        
+        // 다크모드 관리
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            elements.themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            elements.themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // 분야명 한국어 번역 매핑
+        const fieldTranslations = {
+            'Agriculture': '농업(Agriculture)',
+            'Astronomy': '천문학(Astronomy)',
+            'Biology': '생물학(Biology)',
+            'Chemistry': '화학(Chemistry)',
+            'Communication': '통신(Communication)',
+            'Computing': '컴퓨팅(Computing)',
+            'Construction': '건설(Construction)',
+            'Diving': '잠수(Diving)',
+            'Electricity': '전기(Electricity)',
+            'Electronics': '전자공학(Electronics)',
+            'Energy': '에너지(Energy)',
+            'Finance': '금융(Finance)',
+            'Flying': '항공(Flying)',
+            'Food': '식품(Food)',
+            'Geography': '지리학(Geography)',
+            'Hydraulics': '수력학(Hydraulics)',
+            'Lighting': '조명(Lighting)',
+            'Manufacturing': '제조업(Manufacturing)',
+            'Mathematics': '수학(Mathematics)',
+            'Measurement': '측정(Measurement)',
+            'Medicine': '의학(Medicine)',
+            'Metallurgy': '금속학(Metallurgy)',
+            'Meteorology': '기상학(Meteorology)',
+            'Mining': '광업(Mining)',
+            'Misc': '기타(Misc)',
+            'Music': '음악(Music)',
+            'Optics': '광학(Optics)',
+            'Physics': '물리학(Physics)',
+            'Recreation': '오락(Recreation)',
+            'Safety': '안전(Safety)',
+            'Sailing': '항해(Sailing)',
+            'Sanitation': '위생(Sanitation)',
+            'Security': '보안(Security)',
+            'Space': '우주(Space)',
+            'Textiles': '섬유(Textiles)',
+            'Timekeeping': '시간측정(Timekeeping)',
+            'Transportation': '교통(Transportation)',
+            'Visual media': '시각매체(Visual media)',
+            'Weaponry': '무기(Weaponry)'
+        };
+
+        // 기술별 이모지 매핑
+        function getTechEmoji(title, fields) {
+            const title_lower = title.toLowerCase();
+            
+            // 기술명 기반 이모지
+            if (title_lower.includes('ai') || title_lower.includes('artificial intelligence')) return '🤖';
+            if (title_lower.includes('quantum')) return '⚛️';
+            if (title_lower.includes('neural') || title_lower.includes('deep learning') || title_lower.includes('machine learning')) return '🧠';
+            if (title_lower.includes('robot')) return '🤖';
+            if (title_lower.includes('drone') || title_lower.includes('uav')) return '🚁';
+            if (title_lower.includes('satellite')) return '🛰️';
+            if (title_lower.includes('rocket') || title_lower.includes('space')) return '🚀';
+            if (title_lower.includes('laser')) return '🔬';
+            if (title_lower.includes('computer') || title_lower.includes('cpu') || title_lower.includes('processor')) return '💻';
+            if (title_lower.includes('internet') || title_lower.includes('web') || title_lower.includes('network')) return '🌐';
+            if (title_lower.includes('smartphone') || title_lower.includes('mobile')) return '📱';
+            if (title_lower.includes('electric') && title_lower.includes('car')) return '🚗';
+            if (title_lower.includes('vaccine') || title_lower.includes('mrna')) return '💉';
+            if (title_lower.includes('gene') || title_lower.includes('crispr') || title_lower.includes('dna')) return '🧬';
+            if (title_lower.includes('solar')) return '☀️';
+            if (title_lower.includes('wind') && title_lower.includes('turbine')) return '💨';
+            if (title_lower.includes('3d print')) return '🖨️';
+            if (title_lower.includes('blockchain') || title_lower.includes('crypto')) return '⛓️';
+            if (title_lower.includes('vr') || title_lower.includes('virtual reality')) return '🥽';
+            if (title_lower.includes('ar') || title_lower.includes('augmented reality')) return '👓';
+            if (title_lower.includes('telescope')) return '🔭';
+            if (title_lower.includes('microscope')) return '🔬';
+            if (title_lower.includes('x-ray') || title_lower.includes('mri') || title_lower.includes('ct scan')) return '🏥';
+            if (title_lower.includes('steam') && title_lower.includes('engine')) return '🚂';
+            if (title_lower.includes('airplane') || title_lower.includes('aircraft')) return '✈️';
+            if (title_lower.includes('submarine')) return '🚢';
+            if (title_lower.includes('wheel')) return '⚙️';
+            if (title_lower.includes('fire') || title_lower.includes('flame')) return '🔥';
+            if (title_lower.includes('lens') || title_lower.includes('optic')) return '🔍';
+            if (title_lower.includes('battery') || title_lower.includes('electric')) return '🔋';
+            if (title_lower.includes('radio') || title_lower.includes('wireless')) return '📻';
+            if (title_lower.includes('television') || title_lower.includes('tv')) return '📺';
+            if (title_lower.includes('camera') || title_lower.includes('photo')) return '📷';
+            if (title_lower.includes('printing') || title_lower.includes('press')) return '📰';
+            if (title_lower.includes('clock') || title_lower.includes('time')) return '⏰';
+            if (title_lower.includes('compass')) return '🧭';
+            if (title_lower.includes('map')) return '🗺️';
+            if (title_lower.includes('paper')) return '📄';
+            if (title_lower.includes('writing') || title_lower.includes('alphabet')) return '✍️';
+            if (title_lower.includes('agriculture') || title_lower.includes('farming')) return '🌾';
+            if (title_lower.includes('medicine') || title_lower.includes('drug')) return '💊';
+            if (title_lower.includes('surgery') || title_lower.includes('surgical')) return '🏥';
+            if (title_lower.includes('metal') || title_lower.includes('iron') || title_lower.includes('steel')) return '⚒️';
+            if (title_lower.includes('glass')) return '🪟';
+            if (title_lower.includes('concrete') || title_lower.includes('cement')) return '🏗️';
+            if (title_lower.includes('bridge')) return '🌉';
+            if (title_lower.includes('dam')) return '🏔️';
+            if (title_lower.includes('canal')) return '🚢';
+            if (title_lower.includes('road') || title_lower.includes('highway')) return '🛣️';
+            if (title_lower.includes('train') || title_lower.includes('railway')) return '🚆';
+            if (title_lower.includes('ship') || title_lower.includes('boat')) return '⛵';
+            if (title_lower.includes('weapon') || title_lower.includes('gun') || title_lower.includes('sword')) return '⚔️';
+            if (title_lower.includes('bomb') || title_lower.includes('explosive')) return '💣';
+            if (title_lower.includes('music') || title_lower.includes('instrument')) return '🎵';
+            if (title_lower.includes('textile') || title_lower.includes('fabric') || title_lower.includes('cloth')) return '🧵';
+            if (title_lower.includes('food') || title_lower.includes('cooking')) return '🍳';
+            if (title_lower.includes('refrigerat')) return '❄️';
+            if (title_lower.includes('light') || title_lower.includes('lamp') || title_lower.includes('bulb')) return '💡';
+            if (title_lower.includes('candle')) return '🕯️';
+            
+            // 분야 기반 이모지
+            if (fields && fields.length > 0) {
+                const field = fields[0].toLowerCase();
+                if (field.includes('computing')) return '💻';
+                if (field.includes('medicine')) return '⚕️';
+                if (field.includes('transportation')) return '🚗';
+                if (field.includes('communication')) return '📡';
+                if (field.includes('energy')) return '⚡';
+                if (field.includes('space')) return '🚀';
+                if (field.includes('biology')) return '🧬';
+                if (field.includes('chemistry')) return '⚗️';
+                if (field.includes('physics')) return '⚛️';
+                if (field.includes('mathematics')) return '📐';
+                if (field.includes('astronomy')) return '🌟';
+                if (field.includes('electronics')) return '🔌';
+                if (field.includes('optics')) return '🔍';
+                if (field.includes('metallurgy')) return '⚒️';
+                if (field.includes('agriculture')) return '🌾';
+                if (field.includes('construction')) return '🏗️';
+                if (field.includes('weaponry')) return '⚔️';
+                if (field.includes('music')) return '🎵';
+                if (field.includes('textiles')) return '🧵';
+                if (field.includes('food')) return '🍳';
+                if (field.includes('safety')) return '🛡️';
+                if (field.includes('security')) return '🔒';
+                if (field.includes('recreation')) return '🎮';
+                if (field.includes('visual media')) return '🎬';
+                if (field.includes('timekeeping')) return '⏰';
+                if (field.includes('measurement')) return '📏';
+                if (field.includes('lighting')) return '💡';
+                if (field.includes('hydraulics')) return '💧';
+                if (field.includes('diving')) return '🤿';
+                if (field.includes('sailing')) return '⛵';
+                if (field.includes('flying')) return '✈️';
+                if (field.includes('mining')) return '⛏️';
+                if (field.includes('manufacturing')) return '🏭';
+                if (field.includes('sanitation')) return '🧽';
+                if (field.includes('meteorology')) return '🌤️';
+                if (field.includes('geography')) return '🗺️';
+                if (field.includes('finance')) return '💰';
+            }
+            
+            return '🔬'; // 기본 과학 이모지
+        }
+
+        // 기술 제목 번역 매핑
+        const titleTranslations = {
+            '5G cellular network': '5G 셀룰러 네트워크(5G cellular network)',
+            'Quantum computer': '양자컴퓨터(Quantum computer)',
+            'Large language model': '대규모 언어모델(Large language model)',
+            'LLM chatbot': 'LLM 챗봇(LLM chatbot)',
+            'Reflective LLM': '반성적 LLM(Reflective LLM)',
+            'mRNA vaccine': 'mRNA 백신(mRNA vaccine)',
+            'Robotaxi': '로보택시(Robotaxi)',
+            'Cultured meat': '배양육(Cultured meat)',
+            'Transformer (machine learning)': '트랜스포머(Transformer)',
+            'Advanced driver-assistance system': '첨단 운전자 보조 시스템(ADAS)',
+            'Automated insulin delivery system': '자동 인슐린 전달 시스템(Automated insulin delivery system)',
+            'Text-to-image model': '텍스트-이미지 모델(Text-to-image model)',
+            'Electromagnetic catapult': '전자기 투석기(Electromagnetic catapult)',
+            'In-ovo sexing': '난내 성감별(In-ovo sexing)',
+            'Neural network': '신경망(Neural network)',
+            'Deep learning': '딥러닝(Deep learning)',
+            'Machine learning': '머신러닝(Machine learning)',
+            'Artificial intelligence': '인공지능(Artificial intelligence)',
+            'Virtual reality': '가상현실(Virtual reality)',
+            'Augmented reality': '증강현실(Augmented reality)',
+            'Internet of Things': '사물인터넷(IoT)',
+            'Blockchain': '블록체인(Blockchain)',
+            'Cryptocurrency': '암호화폐(Cryptocurrency)',
+            'CRISPR': 'CRISPR 유전자가위(CRISPR)',
+            'Gene therapy': '유전자 치료(Gene therapy)',
+            'Smartphone': '스마트폰(Smartphone)',
+            'Tablet computer': '태블릿 컴퓨터(Tablet computer)',
+            'GPS': 'GPS 위성항법시스템(GPS)',
+            'WiFi': '와이파이(WiFi)',
+            'Bluetooth': '블루투스(Bluetooth)',
+            'USB': 'USB 범용직렬버스(USB)',
+            'LED': 'LED 발광다이오드(LED)',
+            'OLED': 'OLED 유기발광다이오드(OLED)',
+            'Solar panel': '태양광 패널(Solar panel)',
+            'Wind turbine': '풍력 터빈(Wind turbine)',
+            'Electric vehicle': '전기자동차(Electric vehicle)',
+            'Hybrid vehicle': '하이브리드 자동차(Hybrid vehicle)',
+            'Drone': '드론(Drone)',
+            '3D printing': '3D 프린팅(3D printing)',
+            'Laser': '레이저(Laser)',
+            'Fiber optic': '광섬유(Fiber optic)',
+            'Satellite': '인공위성(Satellite)',
+            'Radar': '레이더(Radar)',
+            'Sonar': '소나(Sonar)',
+            'MRI': 'MRI 자기공명영상(MRI)',
+            'CT scan': 'CT 컴퓨터단층촬영(CT scan)',
+            'Ultrasound': '초음파(Ultrasound)',
+            'X-ray': 'X선(X-ray)',
+            'Telescope': '망원경(Telescope)',
+            'Microscope': '현미경(Microscope)',
+            'Robot': '로봇(Robot)',
+            'Computer': '컴퓨터(Computer)',
+            'Internet': '인터넷(Internet)',
+            'Email': '이메일(Email)',
+            'Social media': '소셜미디어(Social media)',
+            'Cloud computing': '클라우드 컴퓨팅(Cloud computing)',
+            'Big data': '빅데이터(Big data)',
+            'Biometric': '생체인식(Biometric)',
+            'Nanotechnology': '나노기술(Nanotechnology)',
+            'Biotechnology': '생명공학(Biotechnology)'
+        };
+
+        // 분야명 번역 함수
+        function translateField(field) {
+            return fieldTranslations[field] || field;
+        }
+
+        // 제목 번역 함수
+        function translateTitle(title) {
+            return titleTranslations[title] || title;
+        }
+
+        // 요약 정리 함수 (중복되는 분야명 제거 및 설명 개선)
+        function translateSummary(summary, originalTitle, fields) {
+            if (!summary) {
+                // 설명이 없는 경우 기본 설명 생성
+                return generateDefaultDescription(originalTitle, fields);
+            }
+            
+            let cleanedSummary = summary;
+            
+            // 짧은 설명이거나 분야명만 있는 경우 처리 (50자 이하로 기준 확대)
+            if (cleanedSummary.length < 50) {
+                // 분야명만 있는지 확인
+                const isOnlyFieldName = Object.keys(fieldTranslations).some(field => 
+                    cleanedSummary.trim() === field || 
+                    cleanedSummary.trim().startsWith(field + ' •') ||
+                    cleanedSummary.trim().startsWith(field + ',')
+                );
+                
+                // 위치 정보만 있는지 확인
+                const hasOnlyLocationInfo = cleanedSummary.includes('위치:') && 
+                    cleanedSummary.replace(/[^가-힣a-zA-Z]/g, '').length < 20;
+                
+                if (isOnlyFieldName || hasOnlyLocationInfo) {
+                    return generateDefaultDescription(originalTitle, fields);
+                }
+            }
+            
+            // 분야명 제거 (태그에 이미 표시되므로 중복 제거)
+            Object.keys(fieldTranslations).forEach(englishField => {
+                // 분야명과 그 뒤의 구분자(• 또는 ,) 제거
+                const escapedField = englishField.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                cleanedSummary = cleanedSummary.replace(new RegExp(`${escapedField}\\s*[•,]?\\s*`, 'g'), '');
+            });
+            
+            // 위치 정보 제거 (별도 표시되므로)
+            cleanedSummary = cleanedSummary.replace(/\s*•\s*위치:[^•]*$/g, '');
+            cleanedSummary = cleanedSummary.replace(/위치:[^•]*•?\s*/g, '');
+            
+            // 개발사 정보 제거 (별도 표시되므로)
+            cleanedSummary = cleanedSummary.replace(/\s*•\s*개발:[^•]*$/g, '');
+            cleanedSummary = cleanedSummary.replace(/개발:[^•]*•?\s*/g, '');
+            
+            // 기술명 번역 적용
+            Object.entries(titleTranslations).forEach(([englishTerm, koreanTranslation]) => {
+                const koreanOnly = koreanTranslation.split('(')[0].trim();
+                if (cleanedSummary.includes(englishTerm)) {
+                    cleanedSummary = cleanedSummary.replace(new RegExp(englishTerm, 'g'), koreanOnly);
+                }
+            });
+            
+            // 연속된 구분자나 공백 정리
+            cleanedSummary = cleanedSummary.replace(/\s*[•,]\s*[•,]\s*/g, ' • ');
+            cleanedSummary = cleanedSummary.replace(/^\s*[•,]\s*/, ''); // 시작 부분 구분자 제거
+            cleanedSummary = cleanedSummary.replace(/\s*[•,]\s*$/, ''); // 끝 부분 구분자 제거
+            cleanedSummary = cleanedSummary.replace(/\s+/g, ' ').trim(); // 여러 공백을 하나로
+            
+            // 정리 후에도 너무 짧으면 기본 설명 생성
+            if (cleanedSummary.length < 10) {
+                return generateDefaultDescription(originalTitle, fields);
+            }
+            
+            return cleanedSummary;
+        }
+        
+        // 기본 설명 생성 함수 (초등학생도 이해하기 쉬운 설명)
+        function generateDefaultDescription(title, fields) {
+            const fieldName = fields && fields.length > 0 ? translateField(fields[0]) : '과학기술';
+            const translatedTitle = translateTitle(title);
+            const title_lower = title.toLowerCase();
+            
+            // 기술명에서 한국어 부분만 추출
+            const koreanTitle = translatedTitle.includes('(') ? 
+                translatedTitle.split('(')[0].trim() : translatedTitle;
+            
+            // 기술별 맞춤 설명 생성
+            if (title_lower.includes('ai') || title_lower.includes('artificial intelligence')) {
+                return '사람처럼 생각하고 학습할 수 있는 컴퓨터 기술입니다. 질문에 답하거나 그림을 그리는 등 다양한 일을 할 수 있어요.';
+            }
+            if (title_lower.includes('quantum')) {
+                return '아주 작은 입자의 특별한 성질을 이용한 기술입니다. 기존 컴퓨터보다 훨씬 빠르게 계산할 수 있어요.';
+            }
+            if (title_lower.includes('robot')) {
+                return '사람 대신 일을 할 수 있는 기계입니다. 청소, 요리, 운전 등 다양한 일을 도와줄 수 있어요.';
+            }
+            if (title_lower.includes('drone')) {
+                return '사람이 타지 않고 원격으로 조종하는 비행기입니다. 배달, 촬영, 구조 작업 등에 사용돼요.';
+            }
+            if (title_lower.includes('satellite')) {
+                return '지구 주위를 돌면서 통신이나 날씨 관측을 하는 인공 물체입니다. GPS나 인터넷 연결에 도움을 줘요.';
+            }
+            if (title_lower.includes('laser')) {
+                return '매우 강하고 정확한 빛을 만드는 기술입니다. 수술, 측정, 제조 등 다양한 분야에서 사용돼요.';
+            }
+            if (title_lower.includes('computer')) {
+                return '정보를 저장하고 계산하는 전자 기계입니다. 게임, 공부, 일 등 우리 생활의 많은 부분에서 사용돼요.';
+            }
+            if (title_lower.includes('internet')) {
+                return '전 세계 컴퓨터들이 연결된 거대한 네트워크입니다. 정보 검색, 소통, 쇼핑 등을 할 수 있어요.';
+            }
+            if (title_lower.includes('smartphone')) {
+                return '전화, 인터넷, 카메라 등 여러 기능이 합쳐진 작은 컴퓨터입니다. 손 안에서 많은 일을 할 수 있어요.';
+            }
+            if (title_lower.includes('electric') && title_lower.includes('car')) {
+                return '기름 대신 전기로 움직이는 자동차입니다. 공기를 깨끗하게 유지하고 소음도 적어요.';
+            }
+            if (title_lower.includes('vaccine')) {
+                return '병에 걸리지 않도록 미리 예방하는 약입니다. 주사로 맞아서 우리 몸이 병균과 싸울 수 있게 도와줘요.';
+            }
+            if (title_lower.includes('gene') || title_lower.includes('dna')) {
+                return '생명체의 유전 정보를 연구하고 수정하는 기술입니다. 질병 치료나 더 좋은 작물을 만드는 데 사용돼요.';
+            }
+            if (title_lower.includes('solar')) {
+                return '태양의 빛을 전기로 바꾸는 기술입니다. 깨끗한 에너지를 만들어서 환경을 보호할 수 있어요.';
+            }
+            if (title_lower.includes('3d print')) {
+                return '컴퓨터로 설계한 물건을 실제로 만들어내는 기계입니다. 플라스틱이나 금속을 층층이 쌓아서 만들어요.';
+            }
+            if (title_lower.includes('telescope')) {
+                return '멀리 있는 별이나 행성을 크게 보여주는 도구입니다. 우주의 신비를 탐험하는 데 사용돼요.';
+            }
+            if (title_lower.includes('microscope')) {
+                return '아주 작은 것들을 크게 보여주는 도구입니다. 세포나 세균 같은 눈에 보이지 않는 것들을 관찰할 수 있어요.';
+            }
+            if (title_lower.includes('x-ray')) {
+                return '몸 속을 들여다볼 수 있는 특별한 빛입니다. 뼈가 부러졌는지 확인하거나 병을 찾는 데 사용돼요.';
+            }
+            if (title_lower.includes('airplane')) {
+                return '하늘을 날 수 있는 교통수단입니다. 먼 곳까지 빠르게 이동할 수 있게 해줘요.';
+            }
+            if (title_lower.includes('wheel')) {
+                return '둥근 모양으로 굴러가는 도구입니다. 무거운 물건을 쉽게 옮기거나 빠르게 이동할 수 있게 해줘요.';
+            }
+            if (title_lower.includes('fire')) {
+                return '열과 빛을 만드는 기술입니다. 음식을 요리하고, 추위를 막고, 도구를 만드는 데 사용돼요.';
+            }
+            if (title_lower.includes('printing')) {
+                return '글자나 그림을 종이에 찍어내는 기술입니다. 책이나 신문을 많이 만들어서 지식을 널리 퍼뜨릴 수 있어요.';
+            }
+            if (title_lower.includes('clock')) {
+                return '시간을 정확하게 알려주는 도구입니다. 약속 시간을 지키고 일정을 관리하는 데 도움을 줘요.';
+            }
+            if (title_lower.includes('compass')) {
+                return '방향을 알려주는 도구입니다. 길을 잃지 않고 목적지를 찾아갈 수 있게 도와줘요.';
+            }
+            if (title_lower.includes('paper')) {
+                return '글을 쓰고 그림을 그릴 수 있는 얇은 재료입니다. 지식과 정보를 기록하고 전달하는 데 사용돼요.';
+            }
+            if (title_lower.includes('agriculture') || title_lower.includes('farming')) {
+                return '식물을 기르고 동물을 키워서 음식을 만드는 기술입니다. 사람들이 먹을 수 있는 곡식과 채소를 생산해요.';
+            }
+            if (title_lower.includes('medicine') || title_lower.includes('drug')) {
+                return '아픈 사람을 치료하는 약이나 방법입니다. 병을 낫게 하고 건강을 지키는 데 도움을 줘요.';
+            }
+            if (title_lower.includes('metal') || title_lower.includes('iron')) {
+                return '단단하고 유용한 재료를 만드는 기술입니다. 도구, 건물, 기계 등을 만드는 데 사용돼요.';
+            }
+            if (title_lower.includes('bridge')) {
+                return '강이나 계곡을 건널 수 있게 만든 구조물입니다. 사람과 차가 안전하게 이동할 수 있게 도와줘요.';
+            }
+            if (title_lower.includes('train')) {
+                return '철로 위를 달리는 교통수단입니다. 많은 사람과 물건을 빠르고 안전하게 운반할 수 있어요.';
+            }
+            if (title_lower.includes('ship') || title_lower.includes('boat')) {
+                return '물 위에 떠서 이동하는 교통수단입니다. 바다나 강을 건너거나 물건을 운반하는 데 사용돼요.';
+            }
+            if (title_lower.includes('light') || title_lower.includes('lamp')) {
+                return '어둠을 밝혀주는 도구입니다. 밤에도 활동할 수 있게 하고 안전을 지켜줘요.';
+            }
+            if (title_lower.includes('camera')) {
+                return '순간을 사진으로 기록하는 도구입니다. 소중한 추억을 남기고 정보를 시각적으로 전달할 수 있어요.';
+            }
+            if (title_lower.includes('radio')) {
+                return '멀리 있는 소리를 들을 수 있게 하는 기술입니다. 음악, 뉴스, 정보를 무선으로 전달해줘요.';
+            }
+            if (title_lower.includes('television')) {
+                return '멀리서 일어나는 일을 영상으로 볼 수 있게 하는 기술입니다. 교육, 오락, 정보 전달에 사용돼요.';
+            }
+            
+            // 분야별 기본 설명
+            if (fields && fields.length > 0) {
+                const field = fields[0].toLowerCase();
+                if (field.includes('computing')) {
+                    return '컴퓨터와 관련된 기술입니다. 계산을 빠르게 하고 정보를 처리하는 데 도움을 줘요.';
+                }
+                if (field.includes('medicine')) {
+                    return '사람의 건강을 지키고 병을 치료하는 기술입니다. 더 오래 건강하게 살 수 있게 도와줘요.';
+                }
+                if (field.includes('transportation')) {
+                    return '사람과 물건을 한 곳에서 다른 곳으로 옮기는 기술입니다. 더 빠르고 안전하게 이동할 수 있게 해줘요.';
+                }
+                if (field.includes('communication')) {
+                    return '멀리 있는 사람과 대화하거나 정보를 주고받는 기술입니다. 세상을 더 가깝게 만들어줘요.';
+                }
+                if (field.includes('energy')) {
+                    return '전기나 열 같은 힘을 만들고 사용하는 기술입니다. 우리 생활에 필요한 에너지를 공급해줘요.';
+                }
+                if (field.includes('space')) {
+                    return '우주를 탐험하고 연구하는 기술입니다. 지구 밖의 신비한 세계를 알아가는 데 도움을 줘요.';
+                }
+                if (field.includes('agriculture')) {
+                    return '농사를 더 잘 짓고 음식을 더 많이 생산하는 기술입니다. 사람들이 배고프지 않게 도와줘요.';
+                }
+                if (field.includes('construction')) {
+                    return '집이나 건물을 짓는 기술입니다. 사람들이 안전하고 편안하게 살 수 있는 공간을 만들어줘요.';
+                }
+                if (field.includes('safety')) {
+                    return '위험으로부터 사람들을 보호하는 기술입니다. 사고를 예방하고 안전을 지켜줘요.';
+                }
+                if (field.includes('education') || field.includes('learning')) {
+                    return '공부하고 배우는 것을 도와주는 기술입니다. 더 쉽고 재미있게 지식을 얻을 수 있게 해줘요.';
+                }
+            }
+            
+            return `${fieldName} 분야의 중요한 발명품입니다. 우리 생활을 더 편리하고 안전하게 만들어주는 기술이에요.`;
+        }
+
+        // 연도 라벨 포맷팅
+        function formatYearLabel(year, yearLabel) {
+            if (yearLabel) return yearLabel;
+            if (typeof year === 'number') {
+                return year < 0 ? `${Math.abs(year)} BCE` : `${year}`;
+            }
+            return '';
+        }
+
+        // 타임라인 아이템 렌더링
+        function renderTimelineItem(item, isLast, previousYear) {
+            const dateLabel = formatYearLabel(item.year, item.yearLabel);
+            let decadeMarker = '';
+            
+            // 연도별 구분선 (10년 단위)
+            if (previousYear && Math.floor(item.year / 10) !== Math.floor(previousYear / 10)) {
+                const decade = Math.floor(item.year / 10) * 10;
+                decadeMarker = `
+                    <div class="decade-marker">
+                        <div class="decade-label">${decade}년대</div>
+                    </div>
+                `;
+            }
+            
+            return `
+                ${decadeMarker}
+                <li class="relative min-h-[72px] fade-in-up" data-year="${item.year}">
+                    <!-- 날짜 컬럼 -->
+                    <div class="absolute -left-24 top-1.5 w-20 text-right" style="color: var(--text-secondary)">
+                        <span class="whitespace-nowrap text-sm font-medium">${dateLabel}</span>
+                    </div>
+
+                    <!-- 타임라인 점 -->
+                    <div class="absolute left-7 top-2">
+                        <div class="h-6 w-6 rounded-full timeline-dot flex items-center justify-center" style="background-color: var(--accent-color)">
+                            <span class="text-xs text-white">✓</span>
+                        </div>
+                    </div>
+
+                    <!-- 카드 -->
+                    <div class="ml-12">
+                        <div class="rounded-2xl tech-card p-5 shadow-sm card-hover transition-all duration-300">
+                            <div class="flex items-start gap-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 text-xl">
+                                    ${getTechEmoji(item.title, item.fields)}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <h3 class="text-lg font-bold leading-6 mb-1" style="color: var(--text-primary)">
+                                            ${translateTitle(item.title)}
+                                        </h3>
+                                        ${item.href ? `
+                                            <a
+                                                href="${item.href}"
+                                                class="inline-flex items-center gap-1 text-sm hover:underline"
+                                                style="color: var(--accent-color)"
+                                                target="_blank"
+                                                rel="noreferrer noopener"
+                                            >
+                                                <span>자세히</span>
+                                                <span>🔗</span>
+                                            </a>
+                                        ` : ''}
+                                    </div>
+                                    <p class="mt-2 text-sm leading-relaxed" style="color: var(--text-secondary)">${translateSummary(item.summary, item.title, item.fields)}</p>
+                                    ${item.organizations?.length ? `
+                                        <p class="mt-1 text-xs" style="color: var(--text-secondary)">
+                                            🏢 ${item.organizations.join(', ')}
+                                        </p>
+                                    ` : ''}
+                                    ${item.location ? `
+                                        <p class="mt-1 text-xs" style="color: var(--text-secondary)">
+                                            📍 ${item.location}
+                                        </p>
+                                    ` : ''}
+                                    <!-- 메타데이터 태그 -->
+                                    ${(item.fields?.length || item.type) ? `
+                                        <div class="mt-2 flex flex-wrap gap-1">
+                                            ${item.type ? `
+                                                <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium" style="background-color: var(--border-color); color: var(--text-secondary)">
+                                                    ${item.type}
+                                                </span>
+                                            ` : ''}
+                                            ${item.fields?.slice(0, 3).map(field => `
+                                                <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium" style="background-color: var(--accent-color); color: white">
+                                                    ${translateField(field)}
+                                                </span>
+                                            `).join('') || ''}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${isLast ? '<div class="absolute left-8 -bottom-3 h-3 w-0.5 timeline-line" aria-hidden="true"></div>' : ''}
+                </li>
+            `;
+        }
+
+        // 필터링 함수
+        function filterItems() {
+            if (!timelineData) return;
+
+            const searchQuery = elements.searchInput.value.trim().toLowerCase();
+            const selectedField = elements.fieldSelect.value;
+            const minYear = elements.minYearInput.value ? Number(elements.minYearInput.value) : null;
+            const maxYear = elements.maxYearInput.value ? Number(elements.maxYearInput.value) : null;
+
+            filteredItems = timelineData.items.filter(item => {
+                // 분야 필터
+                if (selectedField && !item.fields?.some(f => f.toLowerCase() === selectedField.toLowerCase())) {
+                    return false;
+                }
+                
+                // 연도 범위 필터
+                if (typeof minYear === 'number' && typeof item.year === 'number' && item.year < minYear) {
+                    return false;
+                }
+                if (typeof maxYear === 'number' && typeof item.year === 'number' && item.year > maxYear) {
+                    return false;
+                }
+                
+                // 텍스트 검색
+                if (!searchQuery) return true;
+                
+                const searchText = [
+                    item.title,
+                    item.summary,
+                    ...(item.fields || []),
+                    ...(item.organizations || []),
+                    item.location
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLowerCase();
+                    
+                return searchText.includes(searchQuery);
+            });
+
+            renderTimeline();
+        }
+
+        // 타임라인 렌더링
+        function renderTimeline() {
+            elements.resultCount.textContent = `${filteredItems.length.toLocaleString()}개 결과`;
+            
+            if (filteredItems.length === 0) {
+                elements.timeline.innerHTML = '<div class="text-center py-8" style="color: var(--text-secondary)">검색 결과가 없습니다.</div>';
+                return;
+            }
+            
+            elements.timeline.innerHTML = filteredItems
+                .map((item, idx) => {
+                    const isLast = idx === filteredItems.length - 1;
+                    const previousYear = idx > 0 ? filteredItems[idx - 1].year : null;
+                    return renderTimelineItem(item, isLast, previousYear);
+                })
+                .join('');
+        }
+
+        // 연도 네비게이션 생성
+        function generateYearNavigation(items) {
+            const years = [...new Set(items.map(item => item.year))].sort((a, b) => a - b);
+            const decades = {};
+            
+            years.forEach(year => {
+                const decade = Math.floor(year / 10) * 10;
+                if (!decades[decade]) decades[decade] = [];
+                decades[decade].push(year);
+            });
+            
+            return Object.keys(decades).map(decade => {
+                const decadeYears = decades[decade];
+                return `
+                    <div class="decade-nav">
+                        <button class="decade-btn" onclick="scrollToYear(${decade})">
+                            ${decade}년대
+                        </button>
+                        <div class="year-list">
+                            ${decadeYears.map(year => `
+                                <button class="year-btn" onclick="scrollToYear(${year})">
+                                    ${year}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 특정 연도로 스크롤
+        function scrollToYear(year) {
+            const element = document.querySelector(`[data-year="${year}"]`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('highlight');
+                setTimeout(() => element.classList.remove('highlight'), 2000);
+            }
+        }
+
+        // 데이터 로드
+        async function loadData() {
+            try {
+                const response = await fetch('./timeline-data.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                timelineData = await response.json();
+                
+                // UI 업데이트
+                elements.stats.textContent = `총 ${timelineData.metadata.totalItems.toLocaleString()}개 기술 • ${timelineData.metadata.dateRange.earliest.toLocaleString()} ~ ${timelineData.metadata.dateRange.latest} 년`;
+                
+                // 분야 옵션 추가
+                timelineData.metadata.fields.forEach(field => {
+                    const option = document.createElement('option');
+                    option.value = field;
+                    option.textContent = translateField(field);
+                    elements.fieldSelect.appendChild(option);
+                });
+                
+                // 생성일 표시
+                elements.generatedDate.textContent = `생성일: ${new Date(timelineData.metadata.generatedAt).toLocaleDateString('ko-KR')}`;
+                
+                // 연도 네비게이션 초기화
+                elements.yearNav.innerHTML = generateYearNavigation(timelineData.items);
+                
+                // 초기 필터링
+                filterItems();
+                
+                // 애니메이션 관찰자 초기화
+                initializeAnimationObserver();
+                
+                // 로딩 완료
+                elements.loading.classList.add('hidden');
+                elements.content.classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                elements.errorMessage.textContent = error.message;
+                elements.loading.classList.add('hidden');
+                elements.error.classList.remove('hidden');
+            }
+        }
+
+        // 이벤트 리스너 등록
+        function setupEventListeners() {
+            elements.searchInput.addEventListener('input', filterItems);
+            elements.minYearInput.addEventListener('input', filterItems);
+            elements.maxYearInput.addEventListener('input', filterItems);
+            elements.fieldSelect.addEventListener('change', filterItems);
+        }
+        
+        // 애니메이션 관찰자 초기화
+        function initializeAnimationObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+            
+            // 기존 요소들 관찰
+            document.querySelectorAll('.fade-in-up').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // 새로 추가되는 요소들을 위한 MutationObserver
+            const mutationObserver = new MutationObserver((mutations) => {
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            const fadeElements = node.querySelectorAll ? node.querySelectorAll('.fade-in-up') : [];
+                            fadeElements.forEach(el => observer.observe(el));
+                            if (node.classList && node.classList.contains('fade-in-up')) {
+                                observer.observe(node);
+                            }
+                        }
+                    });
+                });
+            });
+            
+            mutationObserver.observe(elements.timeline, {
+                childList: true,
+                subtree: true
+            });
+        }
+
+        // 초기화
+        function init() {
+            initTheme();
+            setupEventListeners();
+            loadData();
+        }
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
